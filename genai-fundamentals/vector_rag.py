@@ -1,5 +1,7 @@
 import os
 from dotenv import load_dotenv
+from neo4j_graphrag.llm import OpenAILLM
+from neo4j_graphrag.generation import GraphRAG
 load_dotenv()
 
 from neo4j import GraphDatabase
@@ -28,10 +30,24 @@ retriever = VectorRetriever(
 )
 
 # Create the LLM
+llm = OpenAILLM(model_name="gpt-5-mini")
 
 # Create GraphRAG pipeline
+#uses retriever to find relevant context based on user query
+# pass query and retrieve context to the LLM
+rag = GraphRAG(retriever=retriever, llm=llm)
 
-# Search 
+# Search
+query_text = "Find me movies about toys coming alive"
+
+response = rag.search(
+    query_text=query_text,
+    retriever_config={"top_k":5},
+    return_context=True
+)
+
+print(response.answer)
+print("CONTEXT:", response.retriever_result.items)
 
 # CLose the database connection
 driver.close()
